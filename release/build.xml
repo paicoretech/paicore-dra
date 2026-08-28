@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<project name="extended.dra.release" default="release" basedir=".">
+    <property environment="sys"/>
+    <property name="release.dir" location="${ant.file.extended.dra.release}/../target" />
+    <property name="base.dir" location="${ant.file.extended.dra.release}/.." />
+    <property name="bin.dir" location="${release.dir}/bin" />
+    <property name="conf.dir" location="${release.dir}/conf" />
+    <property name="logs.dir" location="${release.dir}/logs" />
+    <property name="checkout.dir" value="${base.dir}/checkout" />
+    <property name="extended.dra.release.version" value="3.0.0" />
+    <property name="checkout.extended-dra.dir" value="${base.dir}/.." />
+
+
+    <!-- EXTENDED_SG_VERSION 2.1.0-16 -->
+    <property name="sg.build-number" value="24" />
+    <property name="sg.version" value="2.1.1" />
+    <property name="extended-sg-version" value="${sg.version}-${sg.build-number}" />
+
+    <property name="release.build.goals" value="clean install dependency:tree -Dmaven.test.skip=true" />
+
+    <condition property="mvn.executable" value="${sys.M2_HOME}\bin\mvn.bat" else="mvn">
+        <os family="windows"/>
+    </condition>
+
+
+    <target name="release" depends="clean,build-dra,copy-dra,make-final-zip" />
+
+    <target name="clean">
+        <echo>Delete ${release.dir}</echo>
+        <delete dir="${release.dir}"/>
+        <delete dir="${release.dir}/bin"/>
+        <delete dir="${release.dir}/conf"/>
+        <delete dir="${release.dir}/logs"/>
+        <delete>
+            <fileset dir="${base.dir}">
+                <include name="extended-dra-*.*" />
+            </fileset>
+        </delete>
+    </target>
+
+
+    <target name="build-dra">
+        <echo>building DRA in ${checkout.extended-dra.dir} and ${release.build.goals}</echo>
+        <exec failonerror="true" executable="${mvn.executable}" dir="${checkout.extended-dra.dir}">
+            <arg line="${release.build.goals} -Dextended-signaling-gateway-core.version=${extended-sg-version} -Dmaven.test.skip=true -Passembly" />
+        </exec>
+
+        <copy overwrite="true" todir="${release.dir}/bin/libs">
+            <fileset file="${base.dir}/../extended-diameter-routing-agent/target/libs/**" />
+        </copy>
+
+        <copy overwrite="true" todir="${release.dir}/bin">
+            <fileset file="${base.dir}/../extended-diameter-routing-agent/target/*.jar" />
+            <fileset file="${base.dir}/../management/target/*.jar" />
+        </copy>
+
+
+        <copy failonerror="true" todir="${release.dir}/conf">
+            <fileset file="${base.dir}/../extended-diameter-routing-agent/src/main/resources/*.xml"/>
+        </copy>
+
+        <copy failonerror="true" todir="${release.dir}/conf">
+            <fileset file="${base.dir}/../extended-diameter-routing-agent/src/main/resources/*.yaml"/>
+        </copy>
+
+        <copy failonerror="true" todir="${release.dir}/bin">
+            <fileset file="${base.dir}/utils/start/**"/>
+            <fileset file="${base.dir}/utils/cli/**"/>
+        </copy>
+        <replace file="${release.dir}/bin/start.sh" token="VERSION" value="${extended.dra.release.version}"/>
+    </target>
+
+    <target name="copy-dra">
+        <mkdir dir="${release.dir}/bin" />
+        <mkdir dir="${release.dir}/bin/libs" />
+        <mkdir dir="${release.dir}/conf" />
+        <mkdir dir="${release.dir}/logs" />
+    </target>
+
+
+    <target name="make-final-zip" depends="set-time-stamp">
+        <zip destfile="${base.dir}/Extended-DRA-${extended.dra.release.version}.zip" filesonly="false">
+            <zipfileset dir="${release.dir}" prefix="Extended-DRA-${extended.dra.release.version}">
+                <include name="**" />
+            </zipfileset>
+        </zip>
+    </target>
+
+    <target name="set-time-stamp" unless="skip.timestamp">
+        <tstamp>
+            <format property="time.stamp" pattern="yyMMddHHmm" />
+        </tstamp>
+    </target>
+
+</project>

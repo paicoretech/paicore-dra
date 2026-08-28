@@ -1,0 +1,10 @@
+# Database connection used for realm persistence.
+# Replace every value below before deploying; these are placeholders, not defaults.
+url: jdbc:postgresql://localhost:5432/dra?currentSchema=signaling-gateway
+user: CHANGE_ME
+password: CHANGE_ME
+
+# TCP port on which the node accepts management CLI commands.
+# The interface performs no authentication: restrict this port to the
+# loopback address at the host firewall.
+cliPort: 5556

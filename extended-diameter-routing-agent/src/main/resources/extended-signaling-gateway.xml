@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!--
+  Routing rule configuration.
+
+  This file is watched at run time: saving it reloads the complete rule set in
+  place, without restarting the node. A file that cannot be parsed terminates
+  the process, so validate it before saving on a node in service.
+
+  The rules below are documentation examples (RFC 5737 / RFC 2606). Replace them
+  with your own before connecting this node to live traffic.
+-->
+<ExtendedSignalingGateway>
+    <Applications>
+        <Application name="DraApplication" enabled="true" workers="4" channel="DraChannel" queue="dra">
+            <rules drop-policy="no-match,no-routing">
+
+                <!-- Subscriber partitioning by IMSI, with weighted distribution
+                     across two HSS of equal priority and retry on failure. -->
+                <rule name="subscribers-even" fallback-policy="error,network" enabled="true">
+                    <match origin-host=".*"
+                           origin-realm="epc.example.com"
+                           destination-realm=".*"
+                           destination-host=".*"
+                           application-id="16777251"
+                           imsi="^001010[0-9]{6}[02468][0-9]{2}"
+                           subscription-id="false"
+                           use-msisdn-second-filter="true"
+                           msisdn=".*"/>
+                    <routing>
+                        <host name="hss-a" priority="2" load-balance="70" address="hss-a.example.com"
+                              dest-realm="hss.example.com" route-record="true" replace-host="true"/>
+                        <host name="hss-b" priority="2" load-balance="30" address="hss-b.example.com"
+                              dest-realm="hss.example.com" route-record="true" replace-host="true"/>
+                    </routing>
+                </rule>
+
+                <!-- Cellular IoT segment, identified from the Subscription-Id
+                     grouped AVP rather than the 3GPP-IMSI AVP. -->
+                <rule name="iot-devices" fallback-policy="error,network" enabled="false">
+                    <match origin-realm=".*"
+                           imsi="^0010109[0-9]{8}"
+                           subscription-id="true"/>
+                    <routing>
+                        <host name="hss-iot" priority="1" address="hss-iot.example.com"
+                              dest-realm="iot.example.com" route-record="true"/>
+                    </routing>
+                </rule>
+
+                <!-- Last-resort destination for requests that satisfy no other
+                     rule. A default rule may be declared without a match block. -->
+                <rule name="catch-all" default="true" fallback-policy="error,network" enabled="false">
+                    <routing>
+                        <host name="dea" priority="1" address="dea.example.com" route-record="true"/>
+                    </routing>
+                </rule>
+
+            </rules>
+        </Application>
+    </Applications>
+
+    <Channels>
+        <Channel name="DraChannel" enabled="true" handler="DraChannel" queue="dra" layer="diameter" />
+    </Channels>
+
+    <Layers>
+        <diameter name="diameter" server="true" config="diameter-server.xml" dictionary="dictionary.xml" />
+    </Layers>
+</ExtendedSignalingGateway>

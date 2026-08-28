@@ -1,0 +1,28 @@
+Extended Diameter Routing Agent
+Copyright (C) 2019-2026 PAiCore Technology
+
+This product is licensed under the GNU Affero General Public License v3.0 or
+later. See the LICENSE file for the full terms.
+
+This product includes software developed as part of the Mobicents / RestComm
+project, from which the Diameter stack and the SCTP transport used by this
+agent are derived. Those components are themselves distributed under the GNU
+Affero General Public License v3.0.
+
+  - jDiameter, the Diameter Base Protocol stack (Mobicents / RestComm)
+  - SCTP transport library (Mobicents / RestComm)
+
+This product depends on the following third-party components, distributed under
+their own licenses:
+
+  - SLF4J .......................... MIT License
+  - Logback ........................ EPL 1.0 / LGPL 2.1
+  - Jackson Dataformat YAML ........ Apache License 2.0
+  - Jakarta XML Binding (JAXB) ..... Eclipse Distribution License 1.0
+  - Jakarta Activation ............. Eclipse Distribution License 1.0
+  - GlassFish JAXB Runtime ......... Eclipse Distribution License 1.0
+  - picocli ........................ Apache License 2.0
+  - PostgreSQL JDBC Driver ......... BSD 2-Clause License
+
+The Diameter dictionary distributed with this product carries AVP and command
+definitions derived from IETF RFCs and from 3GPP technical specifications.
